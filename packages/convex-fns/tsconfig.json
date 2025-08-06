@@ -1,0 +1,18 @@
+{
+    "extends": "@workspace/typescript-config/base.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@workspace/convex-fns/*": [
+                "./convex/*"
+            ]
+        }
+    },
+    "include": [
+        "."
+    ],
+    "exclude": [
+        "node_modules",
+        "./convex/_generated/*"
+    ]
+}
