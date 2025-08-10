@@ -1,19 +1,91 @@
 "use client";
-import { Button } from "@workspace/ui/components/button";
-import { useMutation, useQuery } from "convex/react";
+
 import { api } from "@workspace/convex-fns/convex/_generated/api";
-export default function Page() {
-	const users = useQuery(api.users.getMany);
-	const create = useMutation(api.users.create);
+import {
+	Authenticated,
+	AuthLoading,
+	Unauthenticated,
+	useQuery,
+} from "convex/react";
+import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
+
+export default function App() {
 	return (
-		<div className="flex items-center justify-center min-h-svh">
-			<div className="flex flex-col items-center justify-center gap-4">
-				<h1 className="text-2xl font-bold">app/web</h1>
-				<Button size="sm" onClick={() => create()}>
-					Create User
-				</Button>
-				<p>{JSON.stringify(users, null, 2)}</p>
-			</div>
+		<>
+			<AuthLoading>
+				<div>Loading...</div>
+			</AuthLoading>
+			<Unauthenticated>
+				<SignIn />
+			</Unauthenticated>
+			<Authenticated>
+				<Dashboard />
+			</Authenticated>
+		</>
+	);
+}
+
+function Dashboard() {
+	const user = useQuery(api.auth.getCurrentUser);
+	return (
+		<div>
+			<div>Hello {user?.name}!</div>
+			<button type="button" onClick={() => authClient.signOut()}>
+				Sign out
+			</button>
 		</div>
+	);
+}
+
+function SignIn() {
+	const [showSignIn, setShowSignIn] = useState(true);
+
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const formData = new FormData(e.target as HTMLFormElement);
+		if (showSignIn) {
+			await authClient.signIn.email(
+				{
+					email: formData.get("email") as string,
+					password: formData.get("password") as string,
+				},
+				{
+					onError: (ctx) => {
+						window.alert(ctx.error.message);
+					},
+				},
+			);
+		} else {
+			await authClient.signUp.email(
+				{
+					name: formData.get("name") as string,
+					email: formData.get("email") as string,
+					password: formData.get("password") as string,
+				},
+				{
+					onError: (ctx) => {
+						window.alert(ctx.error.message);
+					},
+				},
+			);
+		}
+	};
+
+	return (
+		<>
+			<form onSubmit={handleSubmit}>
+				{!showSignIn && <input name="name" placeholder="Name" />}
+				<input type="email" name="email" placeholder="Email" />
+				<input type="password" name="password" placeholder="Password" />
+				<button type="submit">{showSignIn ? "Sign in" : "Sign up"}</button>
+			</form>
+			<p>
+				{showSignIn ? "Don't have an account? " : "Already have an account? "}
+				<button type="button" onClick={() => setShowSignIn(!showSignIn)}>
+					{showSignIn ? "Sign up" : "Sign in"}
+				</button>
+			</p>
+		</>
 	);
 }
