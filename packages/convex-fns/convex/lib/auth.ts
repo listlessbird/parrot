@@ -1,6 +1,7 @@
 import { convexAdapter } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { betterAuth } from "better-auth";
+import { organization } from "better-auth/plugins";
 import type { GenericCtx } from "../_generated/server.js";
 import { betterAuthComponent } from "../auth.js";
 
@@ -22,5 +23,6 @@ export const createAuth = (ctx: GenericCtx): ReturnType<typeof betterAuth> =>
 		plugins: [
 			// The Convex plugin is required
 			convex(),
+			organization(),
 		],
 	});
