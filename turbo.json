@@ -10,6 +10,13 @@
         "$TURBO_DEFAULT$",
         ".env*"
       ],
+      "env": [
+        "BETTER_AUTH_SECRET",
+        "CONVEX_DEPLOYMENT",
+        "CONVEX_URL",
+        "CONVEX_SITE_URL",
+        "SITE_URL"
+      ],
       "outputs": [
         ".next/**",
         "!.next/cache/**",
@@ -28,7 +35,14 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "BETTER_AUTH_SECRET",
+        "CONVEX_DEPLOYMENT",
+        "CONVEX_URL",
+        "CONVEX_SITE_URL",
+        "SITE_URL"
+      ]
     }
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { OrgSelectView } from "@/modules/auth/ui/views/org-select-view";
+import { OrgSelectionView } from "@/modules/auth/ui/views/org-selection-view";
 export function OrganizationGuard({ children }: { children: React.ReactNode }) {
 	const { data: activeOrganization } = authClient.useActiveOrganization();
 	console.log({ activeOrganization });
@@ -10,7 +10,7 @@ export function OrganizationGuard({ children }: { children: React.ReactNode }) {
 		return (
 			<div>
 				<p>Create an org plsss</p>
-				<OrgSelectView />
+				<OrgSelectionView />
 			</div>
 		);
 	}

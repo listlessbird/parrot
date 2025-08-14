@@ -19,6 +19,7 @@ import {
 	FormMessage,
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
+import { useMutation } from "convex/react";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -55,7 +56,7 @@ const formSchema = z
 		}
 	});
 
-export function OrgSelectView() {
+export function OrgSelectionView() {
 	const { data: activeOrganization, isPending: activePending } =
 		authClient.useActiveOrganization();
 	const {
@@ -81,9 +82,11 @@ export function OrgSelectView() {
 	const [settingActiveOrgId, setSettingActiveOrgId] = useState<string | null>(
 		null,
 	);
+
 	const handleSetActive = async (organizationId: string) => {
 		setError(null);
 		setSettingActiveOrgId(organizationId);
+		console.log("setting active org id", organizationId);
 		const res = await authClient.organization.setActive({ organizationId });
 		if (res?.error)
 			setError(res.error.message ?? "Failed to set active organization");
@@ -116,6 +119,7 @@ export function OrgSelectView() {
 	};
 
 	if (activePending || listPending) {
+		// TODO: loading skeleton
 		return <div>Loading...</div>;
 	}
 

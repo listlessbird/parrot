@@ -3,9 +3,10 @@ import {
 	BetterAuth,
 	type PublicAuthFunctions,
 } from "@convex-dev/better-auth";
+import { v } from "convex/values";
 import { api, components, internal } from "./_generated/api.js";
 import type { DataModel, Id } from "./_generated/dataModel.js";
-import { query } from "./_generated/server.js";
+import { internalMutation, query } from "./_generated/server.js";
 
 // Typesafe way to pass Convex functions defined in this file
 const authFunctions: AuthFunctions = internal.auth;
@@ -27,22 +28,24 @@ export const {
 } = betterAuthComponent.createAuthFunctions<DataModel>({
 	// Must create a user and return the user id
 	onCreateUser: async (ctx, user) => {
-		console.log("onCreateUser", { user });
-
-		// insert into app user's table
-
-		const createdUser = {
-			email: user.email,
-			name: user.name,
-			organizationId: undefined,
-		};
-
-		return ctx.db.insert("users", createdUser);
+		const userId = await ctx.db.insert("users", {
+			email: user.email ?? "",
+			name: user.name ?? undefined,
+			image: user.image ?? undefined,
+		});
+		return userId;
 	},
 
 	// Delete the user when they are deleted from Better Auth
 	onDeleteUser: async (ctx, userId) => {
 		await ctx.db.delete(userId as Id<"users">);
+	},
+	onUpdateUser: async (ctx, user) => {
+		await ctx.db.patch(user.userId as Id<"users">, {
+			email: user.email ?? "",
+			name: user.name ?? undefined,
+			image: user.image ?? undefined,
+		});
 	},
 });
 
@@ -56,12 +59,21 @@ export const getCurrentUser = query({
 		if (!userMetadata) {
 			return null;
 		}
-		// Get user data from your application's database
-		// (skip this if you have no fields in your users table schema)
 		const user = await ctx.db.get(userMetadata.userId as Id<"users">);
 		return {
+			metadata: userMetadata,
 			...user,
-			...userMetadata,
 		};
+	},
+});
+
+export const purgeJwks = internalMutation({
+	args: {},
+	returns: v.null(),
+	handler: async (ctx) => {
+		await ctx.runMutation(components.betterAuth.lib.deleteMany, {
+			model: "jwks",
+		} as any);
+		return null;
 	},
 });

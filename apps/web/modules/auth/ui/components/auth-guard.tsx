@@ -8,7 +8,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 		<>
 			<AuthLoading>
 				<AuthLayout>
-					<p>Loading...</p>
+					<p>Auth guard loading...</p>
 				</AuthLayout>
 			</AuthLoading>
 

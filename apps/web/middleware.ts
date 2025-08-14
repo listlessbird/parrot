@@ -1,10 +1,12 @@
 import { betterFetch } from "@better-fetch/fetch";
+// import type { createAuth } from "./lib/auth";
+import type { createAuth } from "@workspace/convex-fns/convex/lib/auth";
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
-import type { createAuth } from "./lib/auth";
 
 type Session = ReturnType<typeof createAuth>["$Infer"]["Session"];
+
 const getSession = async (request: NextRequest) => {
 	const { data: session } = await betterFetch<Session>(
 		"/api/auth/get-session",
@@ -21,10 +23,28 @@ const getSession = async (request: NextRequest) => {
 
 const signInRoutes = ["/sign-in", "/sign-up", "/verify-2fa"];
 
-// Just check cookie, recommended approach
+const routesThatDoesntRequireOrg = ["/org-selection"];
+
 export async function middleware(request: NextRequest) {
 	const sessionCookie = getSessionCookie(request);
-	// const session = await getSession(request);
+	const session = await getSession(request);
+	console.log(session, { sessionCookie });
+
+	const isARouteThatDoesntRequireOrg = routesThatDoesntRequireOrg.includes(
+		request.nextUrl.pathname,
+	);
+
+	if (
+		session?.session &&
+		// @ts-expect-error - activeOrganizationId is not typed
+		!session.session.activeOrganizationId &&
+		!isARouteThatDoesntRequireOrg
+	) {
+		const sp = new URLSearchParams({ redirectUrl: request.url });
+		return NextResponse.redirect(
+			new URL(`/org-selection?${sp.toString()}`, request.url),
+		);
+	}
 
 	// console.log(JSON.stringify({ session, sessionCookie }, null, 2));
 
